@@ -1,34 +1,14 @@
-Update notes:
+# Updates: Auth UI, Stripe checkout, pricing, invoice form
 
-- Added Prisma schema and Prisma client setup (lib/prisma.ts).
-- Added API routes for signup, login, invoices creation, VAT return generation, and Stripe webhook placeholder.
-- Added Prisma seed script to create a demo company and seed BURS tax rates (14%, zero, exempt).
-- Updated package.json with Prisma and DB scripts; added dependencies for Prisma, bcryptjs, jsonwebtoken, stripe, and pg.
-- Added Postgres service to docker-compose for local development.
+This commit adds the following features:
 
-Next steps locally:
-1. Copy environment file and set values:
-   cp .env.example .env
-   # Edit .env and set JWT_SECRET and STRIPE keys
+- Client pages for login and signup (app/auth/login and app/auth/signup). These call the existing API routes and store JWT and user data in localStorage.
+- Pricing page (app/pricing) with Checkout buttons. The page uses environment variables NEXT_PUBLIC_STRIPE_PRICE_PRO and NEXT_PUBLIC_STRIPE_PRICE_PAYROLL to create Checkout Sessions.
+- Server API route to create Stripe Checkout sessions (app/api/stripe/checkout/route.ts). It expects a priceId in the request body.
+- New invoice creation page (app/invoices/new) with dynamic line items and VAT calculation using lib/burs rates (client-side). Submits to /api/invoices.
+- Small auth helper (lib/auth.ts) for token storage.
 
-2. Start Postgres + app (dev):
-   docker compose up --build
-
-3. In another shell (after the DB is up), run Prisma migrate / push and seed:
-   npm run generate
-   npm run db:push
-   npm run seed
-
-4. Start the Next.js dev server (if not started by docker):
-   npm install
-   npm run dev
-
-5. Open http://localhost:3000
-
-If you want, I can run a follow-up to add:
-- Stripe Checkout / Billing portal integration and sample products/plans
-- Full invoice creation UI with form binding and VAT selection
-- Authentication middleware (protected routes) and frontend login flow
-- Tests and CI integration
-
-Which one should I implement next?
+Notes / next steps:
+- Configure Stripe price IDs in Vercel / .env (NEXT_PUBLIC_STRIPE_PRICE_PRO, NEXT_PUBLIC_STRIPE_PRICE_PAYROLL) and STRIPE_SECRET_KEY on server.
+- Consider adding server-side protection: verify JWT on API routes and provide endpoints to fetch companyId automatically after login.
+- For invoice lines we send tax code placeholders; to calculate precise tax on the server, link taxRate records to invoice lines or resolve codes to taxRate ids server-side.
